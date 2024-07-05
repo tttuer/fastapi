@@ -1,11 +1,12 @@
 from typing import Optional, List
 
+from beanie import Document
 from pydantic import BaseModel, EmailStr
 
 from planner.models.events import Event
 
 
-class User(BaseModel):
+class User(Document):
     email: EmailStr
     password: str
     events: Optional[List[Event]] = None
@@ -17,6 +18,9 @@ class User(BaseModel):
                 'events': [],
             }
         }
+
+    class Settings:
+        name = 'users'
 
 
 class UserSingIn(BaseModel):
