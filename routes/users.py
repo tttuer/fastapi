@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
+from planner.auth.hash_password import HashPassword
 from planner.database.connection import Database
 from planner.models.users import User, UserSingIn
 
@@ -10,6 +11,7 @@ users_router = APIRouter(
 users = {}
 
 user_database = Database(User)
+hash_password = HashPassword()
 
 
 @users_router.post('/signup')
@@ -20,6 +22,9 @@ async def signup(user: User):
             status_code=status.HTTP_409_CONFLICT,
             detail='Email already registered'
         )
+
+    hashed_password = hash_password.create_hash(user.password)
+    user.password = hashed_password
     await user_database.save(user)
     return {
         'message': 'User registered',
