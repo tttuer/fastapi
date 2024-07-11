@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from planner.auth.hash_password import HashPassword
+from planner.auth.jwt_handler import create_access_token
 from planner.database.connection import Database
-from planner.models.users import User, UserSingIn
+from planner.models.users import User, TokenResponse
 
 users_router = APIRouter(
     tags=['User']
@@ -31,20 +33,22 @@ async def signup(user: User):
     }
 
 
-@users_router.post('/signin')
-async def signin(user: UserSingIn):
-    user_exist = await User.find_one(User.email == user.email)
+@users_router.post('/signin', response_model=TokenResponse)
+async def signin(user: OAuth2PasswordRequestForm = Depends()):
+    user_exist = await User.find_one(User.email == user.username)
     if not user_exist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Email not registered'
         )
-    if user_exist.password != user.password:
+    if not hash_password.verify_password(user.password, user_exist.password):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Password mismatch'
         )
 
+    access_token = create_access_token(user_exist.email)
     return {
-        'message': 'User signed in successfully',
+        'access_token': access_token,
+        'token_type': 'Bearer'
     }

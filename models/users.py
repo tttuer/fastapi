@@ -23,14 +23,6 @@ class User(Document):
         name = 'users'
 
 
-class UserSingIn(BaseModel):
-    email: EmailStr
-    password: str
-
-    class Config:
-        json_schema_extra = {
-            'example': {
-                'email': 'ex.example.com',
-                'password': '<PASSWORD>',
-            }
-        }
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
