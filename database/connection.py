@@ -30,7 +30,7 @@ class Database:
         return
 
     async def get(self, id: PydanticObjectId) -> Document | bool:
-        doc = await self.model.get(id=id)
+        doc = await self.model.get(document_id=id)
         if doc:
             return doc
         return False
